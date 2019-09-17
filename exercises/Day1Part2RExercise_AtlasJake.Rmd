@@ -1,0 +1,111 @@
+---
+title: "Day 1 Part 2 Exercises"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Load Data
+```{r}
+dat = read.csv(here::here("data/gapminder5.csv"), stringsAsFactors=FALSE)
+```
+
+# If Statement
+```{r}
+year_present = function(year) {
+    if (year %in% unique(dat$year)) {
+        print(paste("The year", year, "is represented in the data")) }
+    else {
+        print(paste("The year", year, "is not represented in the data"))
+    }
+}
+
+year_present("2002")
+year_present("2012")
+```
+
+# Loop and If Statements
+```{r}
+mean_life_exp = mean(dat$lifeExp, na.rm=T)
+for (country in unique(dat$country)) {
+    country_mean = mean(dat$lifeExp[dat$country == country], na.rm=T)
+    if (country_mean < mean_life_exp) {
+        print(paste(country, ":", country_mean))}
+}
+```
+
+```{r}
+for (continent in unique(dat$continent)) {
+    mean_life_exp = mean(dat$lifeExp[dat$continent==continent], na.rm=T)
+    if (mean_life_exp<50){
+        print(paste("The life expectancy of", continent, "is under 50"))}
+    else if (mean_life_exp>70) {
+        print(paste("The life expectancy of", continent, "is greater than 70"))}
+    else {
+        print(paste("The life expectancy of", continent, "is between 50 and 70"))}
+}
+```
+
+## Write Functions
+```{r}
+describe_df = function(df) {
+    for (i in names(df)) {
+        print(paste(i, ":", class(i)))
+    }
+}
+describe_df(dat)
+```
+
+```{r}
+describe_vector = function(vector, median=FALSE) {
+    print(paste("The mean is", mean(vector)))
+    print(paste("The standard deviation is", sd(vector)))
+    
+    if (median==T) {
+        print(paste("The median is", median(vector)))
+    }
+}
+
+describe_vector(c(1,2,3,4,5,6,78,8,7,6,5,4,3,2,2,4,54), median=T)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
