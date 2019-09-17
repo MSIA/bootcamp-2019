@@ -1,0 +1,46 @@
+---
+title: "Day1 Part 2 R Exercise"
+author: "Kristiyan Dimitrov"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Analyzing the Gapminder dataset
+
+### Loading the data
+
+Let's start by loading the gapminder dataset into a variable called gapminder.
+```{r, echo=FALSE,eval=FALSE}
+library(readr)
+```
+
+```{r,eval=FALSE,message=FALSE}
+
+gapminder <- read_csv("../data/gapminder5.csv")
+
+```
+
+### Checking if there are any records from 2002
+
+```{r}
+if(any(gapminder$year==2002)){
+    print("There are records from 2002")
+}
+
+
+```
+
+### Now we will find te mean life expectancy by country for countries whose population is below the mean for the dataset
+
+```{r}
+for (i in unique(gapminder$country)) {
+    if gapminder$pop[gapminder]
+}
+
+
+```
+
