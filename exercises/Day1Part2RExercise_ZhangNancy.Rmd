@@ -1,0 +1,66 @@
+---
+title: "Rmd Exercise Template"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load the data
+
+Load the gapminder dataset
+
+```{r chunk name}
+# Here is where your R code goes. ``` opens the code chunk, followed by {r}. Then ``` closes the chunk. When you 'knit' the file, the codes will evaluate.
+gapminder <- read.csv(here::here("data/gapminder5.csv"), stringsAsFactors=FALSE)
+```
+
+## If Statements
+
+Check if there are any records after 2002 in the data set. Return nothing found if there's no such record.
+```{r}
+check <- 2002
+if(any(gapminder$year==check)){
+    print("There exists year after 2002.")
+}else{
+    print("Nothing found.")
+}
+```
+##Loop and If Statements
+```{r}
+mean_for_all <- mean(gapminder$pop)
+
+for (i in unique(gapminder$country)){
+    country_mean <- mean(gapminder$pop[gapminder$country==i])
+    if( country_mean < mean_for_all){
+        print(paste(i,"has lower population mean."))
+    }
+}
+```
+```{r}
+low <- 50
+high <- 70
+for (i in unique(gapminder$continent)){
+    continent_mean <- mean(gapminder$lifeExp[gapminder$continent==i])
+    if(continent_mean < low){
+        print(paste(i,"has lifeExp lower than 50."))
+    }
+    else if (low < continent_mean & continent_mean < high){
+        print(paste(i,"has lifeExp between 50 and 70."))
+    }
+    else
+        print(paste(i,"has lifeExp higher than 70."))
+}
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r another chunk name}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
