@@ -73,39 +73,17 @@ describe_vector = function(vector, median=FALSE) {
 describe_vector(c(1,2,3,4,5,6,78,8,7,6,5,4,3,2,2,4,54), median=T)
 ```
 
+```{r}
+plot(dat$gdpPercap, dat$lifeExp)
+cor(dat$gdpPercap, dat$lifeExp)
+```
 
+There is clearly a positive correlation between life expectancy and GDP per capita, though the relationship is not linear!
 
+```{r}
+for (continent in unique(dat$continent)) {
+    print(paste("The correlation between GDP per capita and life expectancy in ", continent, "is", cor(dat$gdpPercap[dat$continent==continent], dat$lifeExp[dat$continent==continent])))
+}
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+The relationship between GDP per capita and life expectancy definitely changes by continent. The Americas are not split and there is not enough time to go through country by country!
