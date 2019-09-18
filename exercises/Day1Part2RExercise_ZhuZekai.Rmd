@@ -54,9 +54,9 @@ Write a script that finds the mean life expectancy by country for countries whos
 ```
 
 ```{r 3}
-threshold <- mean(gapminder$lifeExp)
+threshold <- mean(gapminder$lifeExp)   #Overall mean life expectancy 
 
-countries <- unique(gapminder$country)
+countries <- unique(gapminder$country)   
 
 for (i in countries) {
     mean_le <- mean(gapminder$lifeExp[gapminder$country == i], 
@@ -102,15 +102,65 @@ Hint: Use mode() or class() to get the class of the data in each column. Remembe
 ```
 
 ```{r 5}
+report_name_class <- 
+    function(df) {
+        for(i in names(df)){
+            print(paste("Column names:", i, "; Class:", class(df[,i])))
+        }
+    }
 
+report_name_class(gapminder)
 
 ```
-## Including Plots
 
-You can also embed plots, for example:
+##Exercise: Write Functions
+Create a function that given a vector will print the mean and the standard deviation of a vector, it will optionally also print the median. 
 
-```{r another chunk name}
-plot(pressure)
+Hint: include an argument that takes a boolean (TRUE/FALSE) operator and then include an if statement.
+
+```{asis}
+### Answer
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r 6}
+vector_mean_sd_med <- 
+    function(v,include_median) {
+        print(paste("Mean:", mean(v), "; STD:", sd(v)))
+        if (include_median == TRUE){                                 
+            print(paste("Median:", median(v)))
+        }
+    }
+    
+x <- gapminder$lifeExp
+vector_mean_sd_med(x, TRUE)
+
+```
+
+## Analyzing the relationship
+
+What is the relationship between GDP per capita and life expectancy? Does this relationship change over time? (Hint: Use the natural log of both variables.)
+
+```{asis}
+### Answer
+```
+
+```{r 7}
+years <- unique(gapminder$year)
+
+for(i in years){
+     plot(log(gapminder$lifeExp[gapminder$year==i]) ~ log(gapminder$gdpPercap[gapminder$year==i]),
+                 main=paste0("Relationship between life expectancy and GDP per capita in ",i),
+                 ylab="Life expectancy", xlab="GDP per capita")
+    abline(h = mean(gapminder$lifeExp[gapminder$year == i]))
+}
+
+```
+##Does the relationship between GDP per capita and life expectacy vary by continent? Make sure you divide the Americas into North and South America.
+
+```{asis}
+### Answer
+```
+
+```{r 7}
+```
+
