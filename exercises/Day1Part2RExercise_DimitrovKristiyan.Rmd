@@ -18,9 +18,9 @@ Let's start by loading the gapminder dataset into a variable called gapminder.
 library(readr)
 ```
 
-```{r,eval=FALSE,message=FALSE}
+```{r,message=FALSE}
 
-gapminder <- read_csv("../data/gapminder5.csv")
+gapminder <- read.csv(here::here("data/gapminder5.csv"), stringsAsFactors=FALSE)
 
 ```
 
@@ -30,17 +30,125 @@ gapminder <- read_csv("../data/gapminder5.csv")
 if(any(gapminder$year==2002)){
     print("There are records from 2002")
 }
-
-
 ```
 
-### Now we will find te mean life expectancy by country for countries whose population is below the mean for the dataset
+### Now we will find the mean life expectancy by country for countries whose population is below the mean for the dataset
 
 ```{r}
-for (i in unique(gapminder$country)) {
-    if gapminder$pop[gapminder]
+for (country in unique(gapminder$country)) {
+    for (year in unique(gapminder$year)) {
+        if (gapminder$pop[gapminder$year==year & gapminder$country==country] < mean(gapminder$pop)) {
+            mean_le <- round(mean(gapminder$lifeExp[gapminder$country == country]),2)
+        }
+    }
+    print(paste(country, "Mean Life Expectancy:", mean_le))
 }
+```
 
+### Next, we write a script that loops through the gapminder data by continent and prints out whether the mean life expectancy is smaller than 50, between 50 and 70, or greater than 70
+
+```{r}
+for (continent in unique(gapminder$continent)) {
+    if(mean(gapminder$lifeExp[gapminder$continent==continent]) < 50) {
+        print(paste("Mean Life Expectancy in", continent, "is less than 50"))
+    } else if (mean(gapminder$lifeExp[gapminder$continent==continent]) > 50 &
+               mean(gapminder$lifeExp[gapminder$continent==continent]) < 70) {
+        print(paste("Mean Life Expectancy in", continent, "is between 50 and 70"))
+    } else if (mean(gapminder$lifeExp[gapminder$continent==continent]) > 70){
+        print(paste("Mean Life Expectancy in", continent, "is greater than 70"))
+    }
+}
+```
+
+## We move on to exercising some Function writing
+### First, we write a function that, given a data frame, will print the name of each column and the class of data it contains.
+```{r}
+df_info <- 
+    function(df){
+        for (col_index in seq(ncol(df))){
+            print(paste("Column number", col_index, "has name:",colnames(df[,col_index]),"and  class:", class(df[,col_index])))
+        }
+    }
+# Here we test on our gapminder dataset:
+df_info(gapminder)
+#Note that if we replace class with mode in the above function, the output looks like this
+```
+
+```{r}
+#Note that if we replace class with mode in the above function, the output looks like this
+
+df_info <- 
+    function(df){
+        for (col_index in seq(ncol(df))){
+            print(paste("Column number", col_index, "has name:",colnames(df[,col_index]),"and  class:", mode(df[,col_index])))
+        }
+    }
+# Here we test on our gapminder dataset:
+df_info(gapminder)
+```
+
+##Our second function exercise requires that we create a function that given a vector will print the mean and the standard deviation of a vector, it will optionally also print the median
+
+```{r}
+vector_mean <-
+    function(vector, median =FALSE){
+        
+        print(mean(vector))
+        print(sd(vector))
+        
+        if(median){
+            print(median(vector))
+        }
+    }
+#Now we test:
+vector_mean(c(1,2,3))
+#And with optional argument
+vector_mean(c(1,2,3),TRUE)
+```
+##Final Exercise!
+###Question 1: What is the relationship between GDP per capita and life expectancy? Does this relationship change over time? (Hint: Use the natural log of both variables.)
+
+```{r}
+cor(log(gapminder$gdpPercap),log(gapminder$lifeExp))
+reg<-lm(log(gapminder$lifeExp) ~ log(gapminder$gdpPercap))
+plot(log(gapminder$gdpPercap),log(gapminder$lifeExp))
+abline(reg,col="red",lwd=3)
+summary(reg)
+```
+
+###Question 2: Does the relationship between GDP per capita and life expectacy vary by continent? Make sure you divide the Americas into North and South America.
+
+```{r}
+
+#THE BELOW CODE DOESN"T WORK YET. It is a specific case of the code after that.
+
+# cor(log(gapminder$gdpPercap[gapminder$continent=="Asia"]),log(gapminder$lifeExp[gapminder$continent=="Asia"]))
+# reg<-lm(log(gapminder$lifeExp[gapminder$continent=="Asia"]) ~ log(gapminder$gdpPercap[gapminder$continent=="Asia"]))
+# plot(log(gapminder$gdpPercap[gapminder$continent=="Asia"]),log(gapminder$lifeExp[gapminder$continent=="Asia"]))
+# abline(reg,col="red",lwd=3)
+# summary(reg)
+```
+
+```{r}
+# for(continent in unique(gapminder$continent)) {
+#     cor(log(gapminder$gdpPercap[gapminder$continent==continent]),log(gapminder$lifeExp[gapminder$continent==continent]))
+#     reg[[continent]]<-lm(log(gapminder$lifeExp[gapminder$continent==continent]) ~ log(gapminder$gdpPercap[gapminder$continent==continent]))
+#     plot(log(gapminder$gdpPercap[gapminder$continent==continent]),log(gapminder$lifeExp[gapminder$continent==continent]))
+#     abline(reg[[continent]],col="red",lwd=3)
+#     summary(reg[[continent]])
+# }
+
+
+#BELOW CODE NOT WORKING YET
+#First we need to modify the data so that Americas is split into North America & South America
+
+# for (country in gapminder$country) {
+#     if (gapminder$country[gapminder$country==country] == "Canada" | gapminder$country[gapminder$country==country] == "United States" | gapminder$country[gapminder$country==country] == "Mexico") {
+#     gapminder$continent[gapminder$country==country] = "North America"
+# } else {
+#         gapminder$continent[gapminder$country==country] = "South America"
+#     }
+# }
 
 ```
 
