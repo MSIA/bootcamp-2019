@@ -7,8 +7,10 @@
 
 # Pick a number; save it as x
 
+x <- 5
 
 # Multiply x by 3
+
 
 
 # Take the log of the above (Hint, you need the function log() here)
@@ -20,13 +22,15 @@
 # Square the above
 
 
+
 #### Comparisons and Logical Operators ####
 
 # Check if 1 is bigger than 2
-
+1 > 2
 
 # Check if 1 + 1 is equal to 2
 
+1 + 1 == 2
 
 # Check if it is true that the strings "eat" and "drink" are not equal to each other
 
