@@ -1,11 +1,16 @@
 #Day 1 Part 2
 
+#### Rmarkdown ####
+# See rmd_template.Rmd
+
 #### Load the data ####
 # Load the gapminder dataset.Find the factor variables and change them to character vectors.
+gapminder <- read.csv(here::here("data/gapminder5.csv"), stringsAsFactors=FALSE) #load
 gapminder$country <- as.character(gapminder$country)
 gapminder$continent <- as.character(gapminder$continent)
 str(gapminder)
 
+#### Loop and If Statements ####
 # the mean life expectancy by country?
 mean(gapminder$lifeExp[gapminder$country == "Afghanistan"])
 
@@ -82,7 +87,7 @@ lapply(gapminder, mean)
 # Add function(x) [function] to the call???x becomes the iterator
 sapply(years, function(x) mean(gapminder$lifeExp[gapminder$year == x]))
 
-# Whilw loop
+# While loop
 i <-  1952 # define the interator
 
 while (i < 1987) {
@@ -103,21 +108,88 @@ while (i < 2003) {
 }
 
 #### If Statement ####
-# Use an if() statement to print a suitable message reporting whether there are any records from 2002 in the gapminder dataset. Now do the same for 2012.
-# Hint: use the any function.
+# Which continents have a mean life expectancy greater than 70 years?
+threshold <- 70
 
-#### Loop and If Statements ####
-#Write a script that finds the mean life expectancy by country for countries whose population is below the mean for the dataset
+for(i in unique(gapminder$continent)){
+    tmp <- mean(gapminder$lifeExp[gapminder$continent == i])
+    if (tmp < threshold){
+        print(paste("Mean Life Expectancy in", i, "is less than", threshold))
+    }
+    else{
+        print(paste("Mean Life Expectancy in", i, "is greater than", threshold))
+    }
+}
+# Write a for loop that reports the mean population for years 
+# greater than or equal to 1987.    
+threshold <- mean(gapminder$pop[gapminder$year == 1987])
 
-# Write a script that loops through the gapminder data by continent and prints out whether the mean life expectancy is smaller than 50, between 50 and 70, or greater than 70.
+for(i in years){
+    tmp <- mean(gapminder$pop[gapminder$year == i])
+    if (tmp < threshold){
+        print(paste("Mean Population for", i, "is less than", threshold))
+    }else {
+        print(paste("Mean Population for", i,"is", tmp))
+    }
+}
 
-#### Exercise: Write Functions ####
-#Create a function that given a data frame will print the name of each column and the class of data it contains. Use the gapminder dataset. Hint: Use mode() or class() to get the class of the data in each column. Remember that names() or colnames() returns the name of the columns in a dataset.
 
-# Create a function that given a vector will print the mean and the standard deviation of a vector, it will optionally also print the median. Hint: include an argument that takes a boolean (TRUE/FALSE) operator and then include an if statement.
+#### Write Functions ####
+# Function that prints the value of a selected variable in the gapminder dataset
+get_values <-
+    function(df, variable = "continent") {
+        vals <- unique(df[[variable]])
+        print(paste0(variable, ": ", vals))
+    }
 
-#### Analyzing the relationship ####
-# Use what you???ve learned so far to answer the following questions using the gapminder dataset. Be sure to include some visualizations!
-# What is the relationship between GDP per capita and life expectancy? Does this relationship change over time? (Hint: Use the natural log of both variables.)
+# function that prints the mean and standard deviation for life expentancy 
+# for a given country in the gapminder dataset
+report_mean_sd <- 
+    function(df, variable, country) {
+        var <- df[[variable]][df$country == country] # df[[variable]] = df[, variable]
+        m_le <- mean(var)                            # typeof(gapminder[["pop"]]): double
+        sd_le <- sd(var)                             # typeof(gapminder["pop"]): list
+        cat("Country:", country, 
+            "\nMean Life Expectancy:", m_le,
+            "\nSD Life Expectancy:", sd_le)
+    }
 
-# Does the relationship between GDP per capita and life expectacy vary by continent? Make sure you divide the Americas into North and South America.
+report_mean_sd(gapminder, "lifeExp", "Bulgaria")
+
+# Write a function that reports the mean, median, minimum, and maximum 
+# for life expectancy for a continent in gapminder
+report_mean_med_min_max <- 
+    function(df, variable, continent) {
+        var <- df[[variable]][df$continent == continent] 
+        mean_le <- mean(var)                           
+        med_le <- median(var)
+        min_le <- min(var)
+        max_le <- max(var)
+        cat("Continent:", continent, 
+            "\nMean Life Expectancy:", mean_le,
+            "\nMedian Life Expectancy:", med_le,
+            "\nMinimum Life Expectancy:", min_le,
+            "\nMaximum Life Expectancy:", max_le)
+    }
+
+report_mean_med_min_max(gapminder, "lifeExp", "Asia")
+
+# A log-log model relating life expectancy to GDP
+viz_lm <-
+    function(df, dv, iv, year) {
+        dat <- df[df[["year"]] == year, ]
+        y <- log(dat[[dv]])
+        x <- log(dat[[iv]])
+        fit <- lm(y ~ x)
+        plot(y ~ x, main = year,
+             xlab = iv, ylab = dv)
+        lines(x, predict(fit), col = 'blue')
+    }
+
+viz_lm(gapminder, "lifeExp", "gdpPercap", 1977)
+
+# Loop it!
+for (i in years) {
+    viz_lm(gapminder, "lifeExp", "gdpPercap", i)
+}
+
