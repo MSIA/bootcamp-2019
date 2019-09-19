@@ -1,0 +1,223 @@
+---
+title: "Day 2 Exercise *Zach*"
+date: "`r Sys.Date()`"
+output: html_document
+params:
+    answers: TRUE
+---
+
+```{r, echo=FALSE, eval=TRUE}
+answers<-params$answers
+```
+
+```{r global_options, echo = FALSE, include = FALSE}
+knitr::opts_chunk$set(echo=answers, eval=answers,
+                      warning = FALSE, message = FALSE,
+                      cache = FALSE, tidy = FALSE)
+```
+
+## Load the data
+
+Read both California energy datasets. Make sure the datetime variable is in an appropriate data type (i.e. not character).
+
+```{asis}
+### Answer
+```
+
+```{asis}
+**`dplyr`**
+```
+
+```{r 1}
+library(dplyr)
+library(lubridate)
+
+generation_ca_dp <- read.csv(here::here("data/ca_energy_generation.csv"), 
+                         stringsAsFactors = F)
+imports_ca_dp <- read.csv(here::here("data/ca_energy_imports.csv"), 
+                          stringsAsFactors = F)
+
+generation_ca_dp$datetime <- as_datetime(generation_ca_dp$datetime)
+imports_ca_dp$datetime <- as_datetime(imports_ca_dp$datetime)
+```
+
+```{asis}
+**`data.table`**
+```
+
+```{r 2}
+library(data.table)
+library(lubridate)
+generation_ca_dt <- fread(here::here("data/ca_energy_generation.csv"))
+imports_ca_dt <- fread(here::here("data/ca_energy_imports.csv"))
+
+generation_ca_dt[,datetime := as_datetime(datetime)]
+imports_ca_dt[,datetime := as_datetime(datetime)]
+```
+
+## Merge and reshape the data
+Merge the two datasets and then melt the resulting dataframe/datatable to make it tidy.
+
+ 
+```{asis}
+### Answer
+```
+
+```{asis}
+**`dplyr`**
+```
+
+```{r 3}
+library(reshape2)
+merged_ca_energy_dp <- merge(generation_ca_dp, imports_ca_dp, by = "datetime")
+long_ca_energy_dp <- melt(merged_ca_energy_dp, id.vars = "datetime",
+                 variable.name = "source",
+                 value.name = "output")
+    
+```
+
+```{asis}
+**`data.table`**
+```
+
+```{r 4}
+library(reshape2)
+merged_ca_energy_dt <- generation_ca_dt[imports_ca_dt, on = "datetime"]
+long_ca_energy_dt <- melt(merged_ca_energy_dt, id.vars = "datetime",
+                 variable.name = "source",
+                 value.name = "output")
+```
+
+## Creating new variables
+Create a series of new variables:
+
+1. day, which is the year-month-day, without the hour. The lubridate function as_date will do this.
+2. log_output, which is the natural log of the output.
+3. Challenge: per_output, which is the percent of daily output represented by each observation. You will need to use group_by and to create a new variable with the total output for the day. (Make sure to use ungroup() after this!)
+Bonus: If you are using dplyr, try to do this all in one pipe!
+
+```{asis}
+### Answer
+```
+
+```{asis}
+**`dplyr`**
+```
+
+```{r 5}
+long_ca_energy_dp <- long_ca_energy_dp%>% 
+    mutate(day = as_date(datetime),log_output = log(output)) %>%
+    group_by(day) %>% 
+    mutate(total_daily_output = sum(output, na.rm = T)) %>%
+    ungroup(day) %>% 
+    mutate(per_output = output/total_daily_output)
+
+# Check results
+long_ca_energy_dp %>% select(day, log_output, per_output) %>% head()
+```
+
+```{asis}
+**`data.table`**
+```
+
+```{r 6}
+long_ca_energy_dt[,day := as_date(datetime)]
+long_ca_energy_dt[,log_output := log(output)]
+long_ca_energy_dt[,per_output := output/sum(output, na.rm = TRUE), by = day]
+
+# Check
+long_ca_energy_dt
+```
+
+## Summarizing and analyzing data
+
+1. Which source has the greatest mean output by hour? (Hint: Use the dplyr verb arrange(desc(variable)) to order the data frame so that the largest value of variable is first. Don???t use desc and it arranges in ascending order. The data.table function is setorder.) Which has the least?
+
+```{asis}
+### Answer
+```
+
+```{asis}
+**`dplyr`**
+```
+
+```{r 7}
+long_ca_energy_dp %>%
+  group_by(source) %>%
+  summarize(mean_hourly = mean(output, na.rm = T)) %>%
+  arrange(desc(mean_hourly))
+```
+
+```{asis}
+**`data.table`**
+```
+
+```{r 8}
+#long_ca_energy_dt[, mean_hourly:= mean(output), by = source]
+#setorder(long_ca_energy_dt, -mean_hourly)
+#long_ca_energy_dt 
+
+mean_hourly <- long_ca_energy_dt[,.(mean_hourly = mean(output)), by = source]
+setorder(mean_hourly, -mean_hourly)
+mean_hourly
+```
+
+## Summarizing and analyzing data
+
+Which source has the greatest mean output by day? Which has the least? (Do not include zero values.)
+
+```{asis}
+### Answer
+```
+
+```{asis}
+**`dplyr`**
+```
+
+```{r 9}
+long_ca_energy_dp %>%
+  filter(output>0) %>%
+  group_by(day, source) %>%
+  summarize(mean_daily = mean(output, na.rm = T)) %>%
+  arrange(desc(mean_daily))
+```
+
+```{asis}
+**`data.table`**
+```
+
+```{r 10}
+mean_by_day <- long_ca_energy_dt[output > 0,.(mean_daily = mean(output, na.rm = T)), by = .(source, day)]
+setorder(mean_by_day, -mean_daily)
+mean_by_day
+```
+
+## Summarizing and analyzing data
+
+Which sources has the greatest variance in usage over the course of a dataset? Which has the least? (Do not include zero values.)
+
+```{asis}
+### Answer
+```
+
+```{asis}
+**`dplyr`**
+```
+
+```{r 11}
+long_ca_energy_dp %>%
+  filter(output>0) %>%
+  group_by(source) %>%
+  summarize(var_usage = var(output, na.rm = T)) %>%
+  arrange(desc(var_usage))
+```
+
+```{asis}
+**`data.table`**
+```
+
+```{r 12}
+var_in_usage <- long_ca_energy_dt[output > 0,.(var_usage = var(output, na.rm = T)), by = source]
+setorder(var_in_usage, -var_usage)
+var_in_usage
+```
