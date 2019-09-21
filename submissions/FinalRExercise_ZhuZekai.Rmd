@@ -1,0 +1,202 @@
+---
+title: "FinalRExercise_ZhuZekai.Rmd"
+output: html_document
+---
+
+
+```{r, echo=FALSE, eval=TRUE}
+answers<-params$answers
+```
+
+```{r global_options, echo = FALSE, include = FALSE}
+knitr::opts_chunk$set(echo=answers, eval=answers,
+                      warning = FALSE, message = FALSE,
+                      cache = FALSE, tidy = FALSE)
+```
+
+## Task 1: Load the data
+
+Read the data files `nys_schools.csv` and `nys_acs.csv` into R.
+
+
+```{asis}
+### Answer
+```
+
+```{asis}
+**`dplyr`**
+```
+
+```{r 1}
+library(dplyr)
+
+nys_schools <- read.csv(here::here("data/nys_schools.csv"), 
+                         stringsAsFactors = F)
+nys_acs <- read.csv(here::here("data/nys_acs.csv"), 
+                          stringsAsFactors = F)
+```
+
+
+
+## Task 2: Explore your data
+
+Explore the structure of the two dataframes. Detect missing data 
+ 
+```{asis}
+### Answer
+```
+
+```{asis}
+**`dplyr`**
+```
+
+```{r 2}
+# Overall view of the imported datasets
+
+summary(nys_schools)     # Some missing values in nys_schools are coded as '-99'
+summary(nys_acs)
+str(nys_schools)
+str(nys_acs)
+# dim(nys_schools)
+# dim(nys_acs)
+
+# Missing values in nys_schools are coded as '-99' or ""
+sum (is.na(nys_schools))
+sum(nys_schools == "")
+sum(nys_schools == -99)
+
+# No missing values in nys_acs
+sum (is.na(nys_acs))
+sum(nys_acs == "")
+sum(nys_acs == -99)
+```
+
+
+## Task 3: Recoding and variable manipulation
+
+1. Deal with missing values, which are currently coded as `-99`.
+2. Create a categorical variable that groups counties into "high", "medium", and "low" poverty groups. Decide how you want to split up the groups and briefly explain your decision. 
+3. The tests that the NYS Department of Education administers changes from time to time, so scale scores are not directly comparable year-to-year. Create a new variable that is the standardized z-score for math and English Language Arts (ELA) for each year (hint: group by year and use the `scale()` function)
+
+
+```{asis}
+### Answer for 1
+````
+
+```{r 3}
+nys_schools[nys_schools == -99] <- NA
+
+# Check no missing values which are currently coded as `-99`
+summary(nys_schools)
+
+```
+
+```{asis}
+### Answer for 2
+````
+
+```{r 4}
+
+summary(nys_acs)
+nys_acs$poverty_level <- NA
+tmp1 <- 46347  # 1st Quartile
+tmp2 <- 56448  # 3rd Quartile
+i <- 1
+
+while (i <= nrow(nys_acs)) {
+        tmp <- nys_acs[i,4]
+        if (tmp < tmp1){
+            nys_acs[i,6] <- "high"
+            } else if (tmp >= tmp2){
+                nys_acs[i,6] <- "low"
+                } else{
+                    nys_acs[i,6] <- "median"
+                }
+        i <- i + 1
+        }
+
+
+```
+
+```{asis}
+### Answer for 3
+````
+
+```{r 5}
+
+```
+
+## Task 4: Merge datasets
+
+Create a county-level dataset that merges variables from the schools dataset and the ACS dataset. Remember that you have learned multiple approaches on how to do this, and that you will have to decide how to summarize data when moving from the school to the county level.
+
+```{asis}
+### Answer
+```
+
+```{r 6}
+
+```
+
+## Task 5: Create summary tables
+
+Generate tables showing the following:
+
+1. For each county: total enrollment, percent of students qualifying for free or reduced price lunch, and percent of population in poverty.
+2. For the counties with the top 5 and bottom 5 poverty rate: percent of population in poverty, percent of students qualifying for free or reduced price lunch, mean reading score, and mean math score.
+
+```{asis}
+### Answer for 1
+```
+
+```{r 7}
+
+```
+
+```{asis}
+### Answer for 2
+```
+
+```{r 8}
+
+```
+
+## Task 6: Data visualization
+
+Using `ggplot2`, visualize the following:
+
+1. The relationship between access to free/reduced price lunch and test performance, at the *school* level.
+2. Average test performance across *counties* with high, low, and medium poverty.
+
+```{asis}
+### Answer for 1
+```
+
+```{r 9}
+
+```
+
+```{asis}
+### Answer for 2
+```
+
+```{r 10}
+
+```
+
+##  Task 7: Answering questions
+
+Using the skills you have learned in the past three days, tackle the following question: 
+
+> What can the data tell us about the relationship between poverty and test performance in New York public schools? Has this relationship changed over time? Is this relationship at all moderated by access to free/reduced price lunch?
+
+You may use summary tables, statistical models, and/or data visualization in pursuing an answer to this question. Feel free to build on the tables and plots you generated above in Tasks 5 and 6.
+
+```{asis}
+### Answer
+```
+
+```{r 11}
+
+```
+
