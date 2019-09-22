@@ -1,0 +1,145 @@
+---
+title: "R Day 2 exercises"
+author: "Kristiyan Dimitrov"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+## Load the data
+
+Read both California energy datasets. Make sure the `datetime` variable is in an appropriate data type (i.e. not character). 
+
+```{r, message=FALSE}
+library(lubridate)
+library(reshape2)
+library(tidyverse)
+```
+
+
+```{r}
+generation <- read.csv(here::here("data","ca_energy_generation.csv"), stringsAsFactors = FALSE)
+generation$datetime <- as_datetime(generation$datetime)
+class(generation$datetime)
+imports <- read.csv(here::here("data","ca_energy_imports.csv"), stringsAsFactors = FALSE)
+imports$datetime <- as_datetime(imports$datetime)
+class(imports$datetime)
+
+```
+
+
+## Merge and reshape the data
+
+Merge the two datasets and then melt the resulting dataframe/datatable to make it tidy.
+
+```{r}
+merged_data <- merge(generation, imports, by = "datetime")
+long_merged_data <- melt(merged_data,id.vars="datetime",
+                                        variable.name="source",
+                                        value.name="output")
+head(long_merged_data)
+```
+
+
+## Creating new variables
+
+Create a series of new variables: 
+
+1. `day`, which is the year-month-day, without the hour. The `lubridate` function `as_date` will do this.
+2. `log_output`, which is the natural log of the output.
+3. **Challenge**: `per_output`, which is the percent of daily output represented by each observation. You will need to use `group_by` and to create a new variable with the total output for the day. (Make sure to use `ungroup()` after this!)
+
+Bonus: If you are using `dplyr`, try to do this all in one pipe!
+
+```{r}
+long_merged_data <- 
+    long_merged_data %>% 
+        mutate(day=as_date(datetime),log_output=log(output)) %>% 
+        group_by(day) %>% 
+        mutate(total_daily_output=sum(output, na.rm=TRUE)) %>% 
+        ungroup() %>% 
+        mutate(per_output=output/total_daily_output)
+
+head(long_merged_data)
+```
+
+
+## Summarizing and analyzing data
+
+1. Which source has the greatest mean output by hour? (Hint: Use the `dplyr` verb `arrange(desc(variable))` to order the data frame so that the largest value of `variable` is first. Don't use `desc` and it arranges in ascending order. The `data.table` function is `setorder`.) Which has the least?
+2. Which source has the greatest mean output by day? Which has the least? (Do not include zero values.)
+3. Which sources has the greatest variance in usage over the course of a dataset? Which has the least? (Do not include zero values.)
+
+```{r}
+
+#1
+long_merged_data %>% 
+    group_by(source) %>% 
+    summarize(mean_hourly_output=mean(output)) %>% 
+    arrange(desc(mean_hourly_output)) %>% 
+    head(1)
+
+long_merged_data %>% 
+    group_by(source) %>% 
+    summarize(mean_hourly_output=mean(output)) %>% 
+    arrange(desc(mean_hourly_output)) %>% 
+    tail(1)
+
+#2
+long_merged_data %>% 
+    filter(output!=0) %>% 
+    group_by(day, source) %>% 
+    summarize(mean_daily = mean(output, na.rm = TRUE)) %>% 
+    arrange(desc(mean_daily)) %>% 
+    head(1)
+
+long_merged_data %>% 
+    filter(output!=0) %>% 
+    group_by(day, source) %>% 
+    summarize(mean_daily = mean(output, na.rm = TRUE)) %>% 
+    arrange(desc(mean_daily)) %>% 
+    tail(1)
+
+#3 
+long_merged_data %>%
+  filter(output>0) %>%
+  group_by(source) %>%
+  summarize(sd_output = sd(output, na.rm = T)) %>%
+  arrange(desc(sd_output)) %>%
+    head(1)
+
+long_merged_data %>%
+  filter(output>0) %>%
+  group_by(source) %>%
+  summarize(sd_output = sd(output, na.rm = T)) %>%
+  arrange(desc(sd_output)) %>%
+    tail(1)
+```
+
+
+## Analyzing renewable versus non-renewable energy sources
+
+The dataset `regroup.csv` has information about which sources are considered renewable by the state of California. Use this dataset, along with yourdata manipulation skills, to explore the use of renewable and non-renewable sources. Annotate what your descisions for the analysis.
+
+Hint: Use your merge skills to merge the CA energy data with the `regroup` data. Which variable should you join by?
+
+```{r}
+#First we load the regroup data
+regroup_data <- read.csv(here::here("data","ca_energy_regroup.csv"), stringsAsFactors = FALSE)
+
+#Then we change the name of the "source" column in the long_merged_data to "type" so we can easily and properly merge with the regroup_data.
+names(long_merged_data)[2] <- "type"
+
+#Then we merge it with the rest of the data by using the "source" column in the long_merged_data and the "type" column in the regroup data as key
+
+regroup_merged_data <- merge(long_merged_data, regroup_data, by = "type")
+
+head(regroup_merged_data)
+```
+```{r}
+regroup_merged_data %>% 
+    group_by(group) %>% 
+    summarize(mean_output=mean(output)) %>% 
+    arrange(desc(mean_output)) 
+
+```
+
