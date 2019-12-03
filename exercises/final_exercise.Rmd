@@ -1,0 +1,90 @@
+---
+title: "FinalExercise_ZhangXiaoling.Rmd"
+author: "Xiaoling Zhang"
+date: "9/19/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Final Exercise
+
+
+#### Task 1: Import your data 
+```{r}
+library(readr)
+nys_acs <- read_csv("data/nys_acs.csv")
+nys_schools <- read_csv("data/nys_schools.csv")
+```
+
+
+#### Task 2: Explore your data
+```{r}
+summary(nys_acs)
+sum(is.na(nys_acs)) # No missing value in nys_acs
+summary(nys_schools)
+sum(is.na(nys_schools)) # 1706 missing data in nys_schools
+```
+
+
+#### Task 3: Recoding and variable manipulation
+```{r}
+# Deal with missing values, which are currently coded as `-99`.
+nys_acs[nys_acs == -99] = NA
+nys_schools[nys_schools == -99] = NA
+nys_acs = na.omit(nys_acs)
+nys_schools = na.omit(nys_schools)
+```
+
+```{r}
+# 2. Create a categorical variable that groups counties into "high", "medium", and "low" poverty groups. Decide how you want to split up the groups and briefly explain your decision. 
+nys_acs = nys_acs %>% mutate(poverty_category = ifelse(county_per_poverty>=summary(county_per_poverty)[5], 'high', ifelse(county_per_poverty<=summary(county_per_poverty)[2], 'low', 'median')))
+#All county_per_poverty larger than 3rd quantile is high, less than 1st quantile is low, everything between is medium
+```
+
+```{r}
+#3. The tests that the NYS Department of Education administers changes from time to time, so scale scores are not directly comparable year-to-year. Create a new variable that is the standardized z-score for math and English Language Arts (ELA) for each year (hint: group by year and use the `scale()` function)
+nys_schools = nys_schools %>% group_by(year) %>% mutate(mean_ela_score_standardized = scale(mean_ela_score), mean_math_score_standardized = scale(mean_math_score))
+```
+
+
+#### Task 4: Merge datasets
+```{r}
+# Create a county-level dataset that merges variables from the schools dataset and the ACS dataset. Remember that you have learned multiple approaches on how to do this, and that you will have to decide how to summarize data when moving from the school to the county level.
+nys_schools_county_level = nys_schools %>% 
+    group_by(county_name, year) %>% 
+    summarise(total_enroll_county = sum(total_enroll),
+              per_free_lunch_county = mean(per_free_lunch),
+              per_reduced_lunch_county = mean(per_reduced_lunch),
+              per_lep_county = mean(per_lep),
+              mean_ela_score_county = mean(mean_ela_score),
+              mean_math_score_county = mean(mean_math_score)) %>%
+    mutate(county_name_year = paste(county_name,year))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

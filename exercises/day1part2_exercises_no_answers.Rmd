@@ -141,5 +141,22 @@ vector_info(le, include_median = T)
 Use what you've learned so far to answer the following questions using the `gapminder` dataset. Be sure to include some visualizations!
 
 1. What is the relationship between GDP per capita and life expectancy? Does this relationship change over time? (Hint: Use the natural log of both variables.)
+```{r}
+cor(log(gapminder$gdpPercap), log(gapminder$lifeExp))
+cor_list = c()
+for(i in unique(gapminder$year)){
+    gapminder_temp = gapminder[gapminder$year == i,]
+    print(paste("corr for", i ,"is", cor(log(gapminder_temp$gdpPercap), log(gapminder_temp$lifeExp))))
+    cor_list = c(cor_list, cor(log(gapminder_temp$gdpPercap), log(gapminder_temp$lifeExp)))
+}
+l = lm(cor_list~unique(gapminder$year))
+plot(unique(gapminder$year), cor_list)
+abline(l)
+```
+
 
 2. Does the relationship between GDP per capita and life expectacy vary by continent? Make sure you divide the Americas into North and South America.
+```{r}
+gapminder
+```
+
