@@ -256,7 +256,7 @@ table(gapminder07$lifeExp_over70)
 
 # Create a scatterplot with `lifeExp` on the y-axis and `gdpPercap` on the x-axis.
 
-
+x
 # Add a title and axis labels.
 
 
